@@ -156,8 +156,14 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
               {c.descPost}
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-              <a href="#contact" className="btn-pill btn-pill--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>{c.btnPrimary}</a>
-              <a href="#work"    className="btn-outlined btn-outlined--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>{c.btnSecondary}</a>
+              <a href="#contact" className="btn-pill btn-pill--lg" style={{
+                flex: 1, justifyContent: 'center', whiteSpace: 'nowrap',
+                ...(dark ? { background: '#fff', color: '#09090b', boxShadow: 'none' } : {}),
+              }}>{c.btnPrimary}</a>
+              <a href="#work" className="btn-outlined btn-outlined--lg" style={{
+                flex: 1, justifyContent: 'center', whiteSpace: 'nowrap',
+                ...(dark ? { background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.28)' } : {}),
+              }}>{c.btnSecondary}</a>
             </div>
             <div style={{ display: 'flex', gap: 18, marginTop: 28, alignItems: 'center', color: fg3, font: '500 13px/1 var(--font-sans)' }}>
               <div style={{ display: 'flex' }}>

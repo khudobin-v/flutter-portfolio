@@ -1,15 +1,21 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { IconClaudeCode, IconCursor, IconCodex } from '@/components/ui/AIIcons'
 
-const CYCLE = ['Claude Code', 'Cursor', 'Codex']
+const TOOLS = [
+  { name: 'Claude Code', color: '#CC7A3D', Ic: IconClaudeCode },
+  { name: 'Cursor',      color: '#1C8ADB', Ic: IconCursor      },
+  { name: 'Codex',       color: '#7EE8A2', Ic: IconCodex       },
+]
 
 export default function Hero({ dark = true }: { dark?: boolean }) {
   const [i, setI] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setI(v => (v + 1) % CYCLE.length), 2400)
+    const id = setInterval(() => setI(v => (v + 1) % TOOLS.length), 2400)
     return () => clearInterval(id)
   }, [])
 
+  const { name, color, Ic } = TOOLS[i]
   const fg  = dark ? 'var(--fg-on-dark)' : 'var(--fg-1)'
   const fg3 = dark ? 'var(--color-ash)'  : 'var(--fg-3)'
   const acc = dark ? 'rgba(255,255,255,0.5)' : 'var(--fg-4)'
@@ -32,13 +38,36 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
       <div className="page" style={{ paddingTop: 56 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 80, alignItems: 'end' }} className="grid-2">
           <div>
-            <h1 style={{ margin: 0, font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em', color: fg, textWrap: 'balance' } as React.CSSProperties}>
-              Flutter-приложения,<br/>построенные{' '}
-              <span style={{ color: acc, display: 'inline-block', minWidth: 380, transition: 'all .35s var(--ease-entrance)' }}>
-                вместе с {CYCLE[i]}
+            {/* Static lines — height never changes */}
+            <div style={{ margin: 0, font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em', color: fg }}>
+              Flutter-приложения,<br />построенные
+            </div>
+            {/* Animated line — fixed height, no text-wrap rebalancing */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, height: 76 }}>
+              {/* Tool icon badge */}
+              <div style={{
+                width: 60, height: 60, borderRadius: 18, flexShrink: 0,
+                background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+                border: `1.5px solid ${color}55`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color,
+                transition: 'border-color .4s, color .4s',
+              }}>
+                <Ic size={30} />
+              </div>
+              {/* Tool name */}
+              <span style={{
+                font: '700 72px/0.98 var(--font-sans)',
+                letterSpacing: '-0.03em',
+                color: acc,
+                whiteSpace: 'nowrap',
+                transition: 'opacity .25s',
+              }}>
+                вместе с {name}
               </span>
-            </h1>
+            </div>
           </div>
+
           <div style={{ paddingBottom: 12 }}>
             <p style={{ margin: 0, font: '400 18px/1.55 var(--font-sans)', color: fg3, maxWidth: 360 }}>
               Худобин Василий · продуктовый разработчик. Беру идею в&nbsp;FigJam и&nbsp;довожу до публикации в&nbsp;сторах <span className={dark ? 'inline-key-on-dark' : 'inline-key'}>в 2–4 раза быстрее</span> за счёт связки Flutter + Claude Code, Cursor, Codex.

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Icon from '@/components/ui/Icon'
 import { IconClaudeCode, IconCursor, IconCodex } from '@/components/ui/AIIcons'
 
@@ -58,45 +59,6 @@ function Toggle({ checked, onChange }: { checked:boolean; onChange:(v:boolean)=>
       <div className="adm-toggle__track" />
       <div className="adm-toggle__thumb" />
     </label>
-  )
-}
-
-// ── Login ──────────────────────────────────────────────────────────────
-function Login({ onLogin }: { onLogin:()=>void }) {
-  const [pw, setPw] = useState('')
-  const [err, setErr] = useState(false)
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
-    if (pw === 'admin') { onLogin() }
-    else { setErr(true); setTimeout(() => setErr(false), 1800) }
-  }
-  return (
-    <div className="adm-login">
-      <div className="adm-login__card">
-        <div className="adm-login__logo">
-          <div style={{ width:36, height:36, borderRadius:12, background:'var(--color-obsidian)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <div style={{ width:10, height:10, borderRadius:999, background:'var(--color-ember)' }} />
-          </div>
-          <div>
-            <div style={{ font:'700 15px/1 var(--font-sans)', color:'var(--fg-1)' }}>khudobin/flutter</div>
-            <div style={{ font:'400 11px/1 var(--font-sans)', color:'var(--fg-3)', marginTop:3 }}>Панель управления</div>
-          </div>
-        </div>
-        <h1 className="adm-login__title">Вход</h1>
-        <p className="adm-login__sub">Введите пароль для доступа к&nbsp;сайту.</p>
-        <form onSubmit={submit}>
-          <div className="adm-field">
-            <label className="adm-label">Пароль</label>
-            <input type="password" className="adm-input" placeholder="••••••••" value={pw} onChange={e => setPw(e.target.value)} autoFocus style={err ? { borderColor:'#ef4444' } : {}} />
-            {err && <span style={{ font:'400 12px/1 var(--font-sans)', color:'#ef4444' }}>Неверный пароль</span>}
-          </div>
-          <button type="submit" className="btn-pill btn-pill--lg" style={{ width:'100%', marginTop:8 }}>Войти</button>
-          <p style={{ font:'400 12px/1.4 var(--font-sans)', color:'var(--fg-4)', marginTop:14, textAlign:'center' }}>
-            Демо-пароль: <code style={{ background:'var(--bg-card-muted)', padding:'2px 6px', borderRadius:6 }}>admin</code>
-          </p>
-        </form>
-      </div>
-    </div>
   )
 }
 
@@ -453,24 +415,23 @@ const TITLES: Record<string,string> = { dashboard:'Дашборд', hero:'Hero /
 
 // ── Main AdminPanel ────────────────────────────────────────────────────
 export default function AdminPanel() {
-  const [authed, setAuthed] = useState(false)
+  const router = useRouter()
   const [page, setPage] = useState('dashboard')
   const [data, setData] = useState<Store>(defaultStore)
   const [toast, setToast] = useState<string|null>(null)
 
   useEffect(() => {
-    setAuthed(sessionStorage.getItem('adm_auth') === '1')
     try { const s = JSON.parse(localStorage.getItem(STORE_KEY) || ''); if (s) setData(s) } catch {}
   }, [])
 
-  function login() { sessionStorage.setItem('adm_auth','1'); setAuthed(true) }
-  function logout() { sessionStorage.removeItem('adm_auth'); setAuthed(false) }
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+  }
   function save(msg='Сохранено') { localStorage.setItem(STORE_KEY, JSON.stringify(data)); setToast(msg) }
   function upd<K extends keyof Store>(k: K) { return (v: Store[K]) => setData(d => ({ ...d, [k]: v })) }
 
   const newContacts = data.contacts.filter(c => c.status==='new').length
-
-  if (!authed) return <Login onLogin={login} />
 
   return (
     <div className="adm-shell">

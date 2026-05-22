@@ -15,7 +15,6 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
     return () => clearInterval(id)
   }, [])
 
-  const { name, color, Ic } = TOOLS[i]
   const fg  = dark ? 'var(--fg-on-dark)' : 'var(--fg-1)'
   const fg3 = dark ? 'var(--color-ash)'  : 'var(--fg-3)'
   const acc = dark ? 'rgba(255,255,255,0.5)' : 'var(--fg-4)'
@@ -42,29 +41,38 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
             <div style={{ margin: 0, font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em', color: fg }}>
               Flutter-приложения,<br />построенные
             </div>
-            {/* Animated line — fixed height, no text-wrap rebalancing */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, height: 76 }}>
-              {/* Tool icon badge */}
-              <div style={{
-                width: 60, height: 60, borderRadius: 18, flexShrink: 0,
-                background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
-                border: `1.5px solid ${color}55`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color,
-                transition: 'border-color .4s, color .4s',
-              }}>
-                <Ic size={30} />
+            {/* Animated line — all variants stacked, fade between them */}
+            <div style={{ position: 'relative', height: 76, marginTop: 6 }}>
+              {/* Invisible spacer: reserves width of the longest text */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, whiteSpace: 'nowrap', visibility: 'hidden', pointerEvents: 'none' }}>
+                <span style={{ font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em' }}>вместе с Claude Code</span>
+                <span style={{ width: 60, height: 60, flexShrink: 0 }} />
               </div>
-              {/* Tool name */}
-              <span style={{
-                font: '700 72px/0.98 var(--font-sans)',
-                letterSpacing: '-0.03em',
-                color: acc,
-                whiteSpace: 'nowrap',
-                transition: 'opacity .25s',
-              }}>
-                вместе с {name}
-              </span>
+              {/* All three tools absolutely stacked, opacity-crossfade */}
+              {TOOLS.map((t, j) => (
+                <div key={t.name} style={{
+                  position: 'absolute', top: 0, left: 0, bottom: 0,
+                  display: 'flex', alignItems: 'center', gap: 16,
+                  whiteSpace: 'nowrap',
+                  opacity: i === j ? 1 : 0,
+                  transition: 'opacity .3s ease',
+                  pointerEvents: i === j ? 'auto' : 'none',
+                }}>
+                  <span style={{ font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em', color: acc }}>
+                    вместе с {t.name}
+                  </span>
+                  {/* Icon — right of the name */}
+                  <div style={{
+                    width: 60, height: 60, borderRadius: 18, flexShrink: 0,
+                    background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+                    border: `1.5px solid ${t.color}55`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: t.color,
+                  }}>
+                    <t.Ic size={30} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

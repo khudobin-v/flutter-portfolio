@@ -8,11 +8,27 @@ const TOOLS = [
   { name: 'Codex',       color: '#7EE8A2', Ic: IconCodex       },
 ]
 
+const STORE_KEY = 'adm_data_v1'
+
 export default function Hero({ dark = true }: { dark?: boolean }) {
   const [i, setI] = useState(0)
+  const [ann, setAnn] = useState({ text: '2 слота · июнь–июль', badge: 'AI', color: '#ff5a00' })
+
   useEffect(() => {
     const id = setInterval(() => setI(v => (v + 1) % TOOLS.length), 2400)
     return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORE_KEY) || '')
+      if (s?.hero) setAnn({
+        text:  s.hero.announcementText  ?? ann.text,
+        badge: s.hero.announcementBadge ?? ann.badge,
+        color: s.hero.announcementColor ?? ann.color,
+      })
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fg  = dark ? 'var(--fg-on-dark)' : 'var(--fg-1)'
@@ -24,12 +40,8 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
       {/* Announcement */}
       <div className="page" style={{ paddingTop: 24 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px 8px 10px', borderRadius: 999, background: dark ? 'rgba(255,255,255,0.06)' : 'var(--bg-card)', border: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : 'var(--border-1)'}`, color: dark ? 'var(--color-ash)' : 'var(--fg-3)', font: '500 13px/1 var(--font-sans)' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 999, background: 'var(--color-ember)', color: '#fff', font: '700 11px/1 var(--font-sans)' }}>AI</span>
-          <span>
-            <span className={dark ? 'inline-lead-on-dark' : 'inline-lead'}>Принимаю проекты на </span>
-            <span className={dark ? 'inline-key-on-dark' : 'inline-key'}>июнь–июль</span>
-            <span className={dark ? 'inline-lead-on-dark' : 'inline-lead'}> · 2 слота</span>
-          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 999, background: ann.color, color: '#fff', font: '700 11px/1 var(--font-sans)', flexShrink: 0 }}>{ann.badge}</span>
+          <span>{ann.text}</span>
         </div>
       </div>
 
@@ -80,9 +92,9 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
             <p style={{ margin: 0, font: '400 18px/1.55 var(--font-sans)', color: fg3, maxWidth: 360 }}>
               Худобин Василий · продуктовый разработчик. Беру идею в&nbsp;FigJam и&nbsp;довожу до публикации в&nbsp;сторах <span className={dark ? 'inline-key-on-dark' : 'inline-key'}>в 2–4 раза быстрее</span> за счёт связки Flutter + Claude Code, Cursor, Codex.
             </p>
-            <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
-              <a href="#contact" className="btn-pill btn-pill--lg">Запросить демо</a>
-              <a href="#work" className="btn-outlined btn-outlined--lg">Посмотреть кейсы</a>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <a href="#contact" className="btn-pill btn-pill--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>Запросить демо</a>
+              <a href="#work" className="btn-outlined btn-outlined--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>Посмотреть кейсы</a>
             </div>
             <div style={{ display: 'flex', gap: 18, marginTop: 28, alignItems: 'center', color: fg3, font: '500 13px/1 var(--font-sans)' }}>
               <div style={{ display: 'flex' }}>

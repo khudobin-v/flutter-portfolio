@@ -232,7 +232,7 @@ button { font-family: var(--font-sans); }
   border-bottom: 1px solid var(--border-1);
 }
 .nav-bar--dark {
-  background: rgba(9,9,11,0.78);
+  background: #09090b;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   color: var(--fg-on-dark);
 }

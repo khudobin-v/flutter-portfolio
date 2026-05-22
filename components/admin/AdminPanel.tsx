@@ -5,7 +5,7 @@ import Icon from '@/components/ui/Icon'
 import { IconClaudeCode, IconCursor, IconCodex } from '@/components/ui/AIIcons'
 
 // ── Types ──────────────────────────────────────────────────────────────
-interface HeroData { name:string; tagline:string; slots:string; stat1n:string; stat1l:string; stat2n:string; stat2l:string; stat3n:string; stat3l:string; stat4n:string; stat4l:string; heroTheme:string }
+interface HeroData { name:string; tagline:string; slots:string; announcementText:string; announcementBadge:string; announcementColor:string; stat1n:string; stat1l:string; stat2n:string; stat2l:string; stat3n:string; stat3l:string; stat4n:string; stat4l:string; heroTheme:string }
 interface PortfolioItem { id:number; title:string; category:string; sub:string; tags:string; visible:boolean }
 interface PricingPlan { id:number; plan:string; price:string; period:string; featured:boolean; visible:boolean }
 interface TestimonialItem { id:number; name:string; role:string; quote:string; metric:string; visible:boolean }
@@ -17,7 +17,7 @@ const STORE_KEY = 'adm_data_v1'
 
 function defaultStore(): Store {
   return {
-    hero: { name:'Худобин Василий', tagline:'Flutter-приложения, построенные вместе с', slots:'2 слота · июнь–июль', stat1n:'6+', stat1l:'проектов на Flutter', stat2n:'24h', stat2l:'от идеи до прототипа', stat3n:'3×', stat3l:'ускорение AI-pipeline', stat4n:'iOS+Android', stat4l:'из одной кодовой базы', heroTheme:'dark' },
+    hero: { name:'Худобин Василий', tagline:'Flutter-приложения, построенные вместе с', slots:'2 слота · июнь–июль', announcementText:'2 слота · июнь–июль', announcementBadge:'AI', announcementColor:'#ff5a00', stat1n:'6+', stat1l:'проектов на Flutter', stat2n:'24h', stat2l:'от идеи до прототипа', stat3n:'3×', stat3l:'ускорение AI-pipeline', stat4n:'iOS+Android', stat4l:'из одной кодовой базы', heroTheme:'dark' },
     portfolio: [
       { id:1, title:'Lumen',     category:'Wellness',    sub:'Дневник настроения с AI-разбором за день',          tags:'Riverpod, iOS · Android, OpenAI', visible:true },
       { id:2, title:'Nori',      category:'Marketplace', sub:'Маркетплейс домашних поваров. Подписочная модель.', tags:'Firebase, Yookassa, MapKit',        visible:true },
@@ -170,10 +170,55 @@ function Dashboard({ data }: { data:Store }) {
 }
 
 // ── Hero Editor ────────────────────────────────────────────────────────
+const STATUS_PRESETS = [
+  { label:'Доступен',    badge:'✓',  color:'#16a34a', text:'Принимаю проекты' },
+  { label:'Ограничено',  badge:'AI', color:'#ff5a00', text:'2 слота · июнь–июль' },
+  { label:'Занят',       badge:'✗',  color:'#dc2626', text:'Занят, вернусь в сентябре' },
+]
+
 function HeroEditor({ hero, onChange, onSave }: { hero:HeroData; onChange:(v:HeroData)=>void; onSave:()=>void }) {
   const f = (k: keyof HeroData) => ({ value: hero[k], onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...hero, [k]: e.target.value }), className: 'adm-input' })
   return (
     <>
+      {/* ── Статус занятости ── */}
+      <div className="adm-section-card">
+        <div className="adm-section-card__header"><div className="adm-section-card__title">Статус занятости</div></div>
+        <div className="adm-section-card__body">
+          {/* Presets */}
+          <div style={{ display:'flex', gap:8, marginBottom:20 }}>
+            {STATUS_PRESETS.map(p => (
+              <button key={p.label}
+                onClick={() => onChange({ ...hero, announcementBadge:p.badge, announcementColor:p.color, announcementText:p.text })}
+                style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 14px', borderRadius:10, border:`2px solid ${hero.announcementColor===p.color ? p.color : 'var(--border-2)'}`, background: hero.announcementColor===p.color ? `${p.color}18` : 'var(--bg-card)', cursor:'pointer', font:'500 13px/1 var(--font-sans)', color:'var(--fg-1)' }}>
+                <span style={{ width:20, height:20, borderRadius:999, background:p.color, color:'#fff', display:'inline-flex', alignItems:'center', justifyContent:'center', font:'700 10px/1 var(--font-sans)', flexShrink:0 }}>{p.badge}</span>
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {/* Preview */}
+          <div style={{ display:'inline-flex', alignItems:'center', gap:10, padding:'8px 14px 8px 10px', borderRadius:999, background:'var(--color-obsidian)', border:'1px solid rgba(255,255,255,0.12)', marginBottom:20 }}>
+            <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:999, background:hero.announcementColor||'#ff5a00', color:'#fff', font:'700 11px/1 var(--font-sans)', flexShrink:0 }}>{hero.announcementBadge||'AI'}</span>
+            <span style={{ font:'500 13px/1 var(--font-sans)', color:'var(--color-ash)' }}>{hero.announcementText||'Текст статуса'}</span>
+          </div>
+          {/* Custom fields */}
+          <div style={{ display:'grid', gridTemplateColumns:'120px 1fr', gap:12, alignItems:'end' }}>
+            <div className="adm-field" style={{ marginBottom:0 }}>
+              <label className="adm-label">Иконка / текст</label>
+              <input {...f('announcementBadge')} style={{ textAlign:'center' }} maxLength={4} />
+            </div>
+            <div className="adm-field" style={{ marginBottom:0 }}>
+              <label className="adm-label">Текст объявления</label>
+              <input {...f('announcementText')} />
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:8, marginTop:12, alignItems:'center' }}>
+            <label className="adm-label" style={{ marginBottom:0, minWidth:80 }}>Цвет иконки</label>
+            <input type="color" value={hero.announcementColor||'#ff5a00'} onChange={e => onChange({ ...hero, announcementColor:e.target.value })} className="adm-color-swatch" style={{ width:36, height:36 }} />
+            <input {...f('announcementColor')} style={{ maxWidth:110 }} />
+          </div>
+        </div>
+      </div>
+
       <div className="adm-section-card">
         <div className="adm-section-card__header">
           <div className="adm-section-card__title">Hero — основной текст</div>
@@ -187,7 +232,6 @@ function HeroEditor({ hero, onChange, onSave }: { hero:HeroData; onChange:(v:Her
         <div className="adm-section-card__body" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
           <div className="adm-field"><label className="adm-label">Имя</label><input {...f('name')} /></div>
           <div className="adm-field"><label className="adm-label">Tagline</label><input {...f('tagline')} /></div>
-          <div className="adm-field" style={{ gridColumn:'1/-1' }}><label className="adm-label">Доступность</label><input {...f('slots')} /></div>
         </div>
       </div>
       <div className="adm-section-card">

@@ -10,9 +10,39 @@ const TOOLS = [
 
 const STORE_KEY = 'adm_data_v1'
 
+interface HeroContent {
+  text:        string
+  badge:       string
+  color:       string
+  descPre:     string
+  descAccent:  string
+  descPost:    string
+  btnPrimary:  string
+  btnSecondary: string
+}
+
+const DEFAULTS: HeroContent = {
+  text:         '2 слота · июнь–июль',
+  badge:        'AI',
+  color:        '#ff5a00',
+  descPre:      'Худобин Василий · продуктовый разработчик. Беру идею в FigJam и довожу до публикации в сторах ',
+  descAccent:   'в 2–4 раза быстрее',
+  descPost:     ' за счёт связки Flutter + Claude Code, Cursor, Codex.',
+  btnPrimary:   'Запросить демо',
+  btnSecondary: 'Посмотреть кейсы',
+}
+
 export default function Hero({ dark = true }: { dark?: boolean }) {
   const [i, setI] = useState(0)
-  const [ann, setAnn] = useState({ text: '2 слота · июнь–июль', badge: 'AI', color: '#ff5a00' })
+  const [isMobile, setIsMobile] = useState(false)
+  const [c, setC] = useState<HeroContent>(DEFAULTS)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 880)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     const id = setInterval(() => setI(v => (v + 1) % TOOLS.length), 2400)
@@ -22,79 +52,112 @@ export default function Hero({ dark = true }: { dark?: boolean }) {
   useEffect(() => {
     try {
       const s = JSON.parse(localStorage.getItem(STORE_KEY) || '')
-      if (s?.hero) setAnn({
-        text:  s.hero.announcementText  ?? ann.text,
-        badge: s.hero.announcementBadge ?? ann.badge,
-        color: s.hero.announcementColor ?? ann.color,
+      if (s?.hero) setC({
+        text:         s.hero.announcementText   ?? DEFAULTS.text,
+        badge:        s.hero.announcementBadge  ?? DEFAULTS.badge,
+        color:        s.hero.announcementColor  ?? DEFAULTS.color,
+        descPre:      s.hero.heroDescPre        ?? DEFAULTS.descPre,
+        descAccent:   s.hero.heroDescAccent     ?? DEFAULTS.descAccent,
+        descPost:     s.hero.heroDescPost       ?? DEFAULTS.descPost,
+        btnPrimary:   s.hero.heroBtnPrimary     ?? DEFAULTS.btnPrimary,
+        btnSecondary: s.hero.heroBtnSecondary   ?? DEFAULTS.btnSecondary,
       })
     } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fg  = dark ? 'var(--fg-on-dark)' : 'var(--fg-1)'
   const fg3 = dark ? 'var(--color-ash)'  : 'var(--fg-3)'
   const acc = dark ? 'rgba(255,255,255,0.5)' : 'var(--fg-4)'
 
+  // ── Animated tool row (desktop: spacer+overlay; mobile: single crossfade)
+  function AnimatedRow() {
+    const fontSize = 'clamp(38px, 6vw, 72px)'
+    const font = `700 ${fontSize}/0.98 var(--font-sans)`
+
+    if (isMobile) {
+      return (
+        <div style={{ marginTop: 4 }}>
+          {/* "вместе с" static line */}
+          <div style={{ font, letterSpacing: '-0.03em', color: acc }}>вместе с</div>
+          {/* icon + tool name — always fits on one line */}
+          {TOOLS.map((t, j) => (
+            <div key={t.name} style={{
+              display: i === j ? 'flex' : 'none',
+              alignItems: 'center', gap: 12, marginTop: 4,
+            }}>
+              <div className="hero-icon-badge" style={{
+                background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+                border: `1.5px solid ${t.color}55`, color: t.color,
+              }}>
+                <t.Ic size={20} />
+              </div>
+              <span style={{ font, letterSpacing: '-0.03em', color: acc }}>{t.name}</span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    return (
+      <div style={{ position: 'relative', marginTop: 6 }}>
+        {/* Invisible spacer — reserves width of longest text */}
+        <div aria-hidden style={{ display: 'flex', alignItems: 'center', gap: 16, whiteSpace: 'nowrap', visibility: 'hidden', pointerEvents: 'none', font, letterSpacing: '-0.03em' }}>
+          <span>вместе с Claude Code</span>
+          <span style={{ width: 'clamp(42px,5vw,60px)', height: 'clamp(42px,5vw,60px)', flexShrink: 0 }} />
+        </div>
+        {/* Stacked overlays — opacity crossfade */}
+        {TOOLS.map((t, j) => (
+          <div key={t.name} style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', gap: 16, whiteSpace: 'nowrap',
+            opacity: i === j ? 1 : 0,
+            transition: 'opacity .3s ease',
+            pointerEvents: i === j ? 'auto' : 'none',
+          }}>
+            <span style={{ font, letterSpacing: '-0.03em', color: acc }}>{`вместе с ${t.name}`}</span>
+            <div className="hero-icon-badge" style={{
+              background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+              border: `1.5px solid ${t.color}55`, color: t.color,
+            }}>
+              <t.Ic size={28} />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <section className="pg-section" style={{ background: dark ? 'var(--bg-dark)' : 'transparent', color: dark ? 'var(--fg-on-dark)' : 'inherit', paddingTop: 32 }}>
-      {/* Announcement */}
+      {/* Announcement pill */}
       <div className="page" style={{ paddingTop: 24 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px 8px 10px', borderRadius: 999, background: dark ? 'rgba(255,255,255,0.06)' : 'var(--bg-card)', border: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : 'var(--border-1)'}`, color: dark ? 'var(--color-ash)' : 'var(--fg-3)', font: '500 13px/1 var(--font-sans)' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 999, background: ann.color, color: '#fff', font: '700 11px/1 var(--font-sans)', flexShrink: 0 }}>{ann.badge}</span>
-          <span>{ann.text}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 999, background: c.color, color: '#fff', font: '700 11px/1 var(--font-sans)', flexShrink: 0 }}>{c.badge}</span>
+          <span>{c.text}</span>
         </div>
       </div>
 
       {/* Main grid */}
       <div className="page" style={{ paddingTop: 56 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 80, alignItems: 'end' }} className="grid-2">
+          {/* LEFT: heading */}
           <div>
-            {/* Static lines — height never changes */}
-            <div style={{ margin: 0, font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em', color: fg }}>
+            <div className="hero-h1" style={{ color: fg }}>
               Flutter-приложения,<br />построенные
             </div>
-            {/* Animated line — all variants stacked, fade between them */}
-            <div style={{ position: 'relative', height: 76, marginTop: 6 }}>
-              {/* Invisible spacer: reserves width of the longest text */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, whiteSpace: 'nowrap', visibility: 'hidden', pointerEvents: 'none' }}>
-                <span style={{ font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em' }}>вместе с Claude Code</span>
-                <span style={{ width: 60, height: 60, flexShrink: 0 }} />
-              </div>
-              {/* All three tools absolutely stacked, opacity-crossfade */}
-              {TOOLS.map((t, j) => (
-                <div key={t.name} style={{
-                  position: 'absolute', top: 0, left: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', gap: 16,
-                  whiteSpace: 'nowrap',
-                  opacity: i === j ? 1 : 0,
-                  transition: 'opacity .3s ease',
-                  pointerEvents: i === j ? 'auto' : 'none',
-                }}>
-                  <span style={{ font: '700 72px/0.98 var(--font-sans)', letterSpacing: '-0.03em', color: acc }}>
-                    вместе с {t.name}
-                  </span>
-                  {/* Icon — right of the name */}
-                  <div style={{
-                    width: 60, height: 60, borderRadius: 18, flexShrink: 0,
-                    background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
-                    border: `1.5px solid ${t.color}55`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: t.color,
-                  }}>
-                    <t.Ic size={30} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AnimatedRow />
           </div>
 
+          {/* RIGHT: description + buttons + social proof */}
           <div style={{ paddingBottom: 12 }}>
             <p style={{ margin: 0, font: '400 18px/1.55 var(--font-sans)', color: fg3, maxWidth: 360 }}>
-              Худобин Василий · продуктовый разработчик. Беру идею в&nbsp;FigJam и&nbsp;довожу до публикации в&nbsp;сторах <span className={dark ? 'inline-key-on-dark' : 'inline-key'}>в 2–4 раза быстрее</span> за счёт связки Flutter + Claude Code, Cursor, Codex.
+              {c.descPre}
+              <span className={dark ? 'inline-key-on-dark' : 'inline-key'}>{c.descAccent}</span>
+              {c.descPost}
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-              <a href="#contact" className="btn-pill btn-pill--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>Запросить демо</a>
-              <a href="#work" className="btn-outlined btn-outlined--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>Посмотреть кейсы</a>
+              <a href="#contact" className="btn-pill btn-pill--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>{c.btnPrimary}</a>
+              <a href="#work"    className="btn-outlined btn-outlined--lg" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>{c.btnSecondary}</a>
             </div>
             <div style={{ display: 'flex', gap: 18, marginTop: 28, alignItems: 'center', color: fg3, font: '500 13px/1 var(--font-sans)' }}>
               <div style={{ display: 'flex' }}>

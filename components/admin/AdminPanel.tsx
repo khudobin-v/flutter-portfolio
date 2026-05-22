@@ -5,7 +5,7 @@ import Icon from '@/components/ui/Icon'
 import { IconClaudeCode, IconCursor, IconCodex } from '@/components/ui/AIIcons'
 
 // ── Types ──────────────────────────────────────────────────────────────
-interface HeroData { name:string; tagline:string; slots:string; announcementText:string; announcementBadge:string; announcementColor:string; stat1n:string; stat1l:string; stat2n:string; stat2l:string; stat3n:string; stat3l:string; stat4n:string; stat4l:string; heroTheme:string }
+interface HeroData { name:string; tagline:string; slots:string; announcementText:string; announcementBadge:string; announcementColor:string; heroDescPre:string; heroDescAccent:string; heroDescPost:string; heroBtnPrimary:string; heroBtnSecondary:string; stat1n:string; stat1l:string; stat2n:string; stat2l:string; stat3n:string; stat3l:string; stat4n:string; stat4l:string; heroTheme:string }
 interface PortfolioItem { id:number; title:string; category:string; sub:string; tags:string; visible:boolean }
 interface PricingPlan { id:number; plan:string; price:string; period:string; featured:boolean; visible:boolean }
 interface TestimonialItem { id:number; name:string; role:string; quote:string; metric:string; visible:boolean }
@@ -17,7 +17,7 @@ const STORE_KEY = 'adm_data_v1'
 
 function defaultStore(): Store {
   return {
-    hero: { name:'Худобин Василий', tagline:'Flutter-приложения, построенные вместе с', slots:'2 слота · июнь–июль', announcementText:'2 слота · июнь–июль', announcementBadge:'AI', announcementColor:'#ff5a00', stat1n:'6+', stat1l:'проектов на Flutter', stat2n:'24h', stat2l:'от идеи до прототипа', stat3n:'3×', stat3l:'ускорение AI-pipeline', stat4n:'iOS+Android', stat4l:'из одной кодовой базы', heroTheme:'dark' },
+    hero: { name:'Худобин Василий', tagline:'Flutter-приложения, построенные вместе с', slots:'2 слота · июнь–июль', announcementText:'2 слота · июнь–июль', announcementBadge:'AI', announcementColor:'#ff5a00', heroDescPre:'Худобин Василий · продуктовый разработчик. Беру идею в FigJam и довожу до публикации в сторах ', heroDescAccent:'в 2–4 раза быстрее', heroDescPost:' за счёт связки Flutter + Claude Code, Cursor, Codex.', heroBtnPrimary:'Запросить демо', heroBtnSecondary:'Посмотреть кейсы', stat1n:'6+', stat1l:'проектов на Flutter', stat2n:'24h', stat2l:'от идеи до прототипа', stat3n:'3×', stat3l:'ускорение AI-pipeline', stat4n:'iOS+Android', stat4l:'из одной кодовой базы', heroTheme:'dark' },
     portfolio: [
       { id:1, title:'Lumen',     category:'Wellness',    sub:'Дневник настроения с AI-разбором за день',          tags:'Riverpod, iOS · Android, OpenAI', visible:true },
       { id:2, title:'Nori',      category:'Marketplace', sub:'Маркетплейс домашних поваров. Подписочная модель.', tags:'Firebase, Yookassa, MapKit',        visible:true },
@@ -243,6 +243,38 @@ function HeroEditor({ hero, onChange, onSave }: { hero:HeroData; onChange:(v:Her
               <div className="adm-field"><label className="adm-label">Стат {i} — подпись</label><input {...f(`stat${i}l` as keyof HeroData)} /></div>
             </div>
           ))}
+        </div>
+      </div>
+      {/* ── Описание и кнопки ── */}
+      <div className="adm-section-card">
+        <div className="adm-section-card__header"><div className="adm-section-card__title">Описание и кнопки</div></div>
+        <div className="adm-section-card__body" style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          <div className="adm-field" style={{ marginBottom:0 }}>
+            <label className="adm-label">Текст до выделения</label>
+            <input {...f('heroDescPre')} />
+          </div>
+          <div className="adm-field" style={{ marginBottom:0 }}>
+            <label className="adm-label">Выделенная фраза</label>
+            <input {...f('heroDescAccent')} />
+          </div>
+          <div className="adm-field" style={{ marginBottom:0 }}>
+            <label className="adm-label">Текст после выделения</label>
+            <input {...f('heroDescPost')} />
+          </div>
+          {/* Preview */}
+          <div style={{ padding:'14px 16px', borderRadius:12, background:'var(--bg-canvas)', border:'1px solid var(--border-1)', font:'400 14px/1.6 var(--font-sans)', color:'var(--fg-2)' }}>
+            {hero.heroDescPre}<strong style={{ color:'var(--fg-1)' }}>{hero.heroDescAccent}</strong>{hero.heroDescPost}
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <div className="adm-field" style={{ marginBottom:0 }}>
+              <label className="adm-label">Кнопка 1 (primary)</label>
+              <input {...f('heroBtnPrimary')} />
+            </div>
+            <div className="adm-field" style={{ marginBottom:0 }}>
+              <label className="adm-label">Кнопка 2 (outlined)</label>
+              <input {...f('heroBtnSecondary')} />
+            </div>
+          </div>
         </div>
       </div>
       <div className="adm-save-bar"><span className="adm-save-bar__hint">Изменения применяются после сохранения</span><button className="btn-pill" onClick={onSave}>Сохранить</button></div>
